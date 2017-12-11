@@ -38,6 +38,7 @@ $(document).ready(function () {
                         $("body").html("Name: <input type='text' id='anmeldename'/><br>")
                         .append("Passwort: <input type='password' id='passwort'/><br>\n")
                         .append("<input type='button' value='OK' id='anmeldeknopf'/>")
+                .append("<input type='button' value='Registrieren' id='regknopf'/>");
                         
                     } else {
                         $("body").html("Gratulation, du bist angemeldet!")
