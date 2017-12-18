@@ -65,7 +65,9 @@ public class DatenbankVerticle extends AbstractVerticle {
             case "ueberpruefe-passwort":
                 überprüfeUser(message);
                 break;
-
+            case "ueberpruefe-name":
+                erstelleUser(message);
+                break;
             default:
                 message.fail(ErrorCodes.SCHLECHTE_AKTION.ordinal(), "Schlechte Aktion: " + action);
         }
@@ -133,6 +135,35 @@ public class DatenbankVerticle extends AbstractVerticle {
         return erstellenFuture;
     }
 
+     private void erstelleUser(Message<JsonObject> message) {
+
+        String name = message.body().getString("regname");
+        String passwort = message.body().getString("passwort");
+
+        LOGGER.info("Überprüfe, ob der Nutzer " + name + " mit dem Passwort " + passwort + " schon existiert.");
+         
+        dbClient.queryWithParams(SQL_ÜBERPRÜFE_EXISTENZ_USER, new JsonArray().add(name), abfrage -> {
+            if (abfrage.succeeded()) {
+                List<JsonArray> zeilen = abfrage.result().getResults();
+                if (zeilen.size() == 1) {
+                    String passwortDB = zeilen.get(0).getString(0);
+
+                    if (passwortDB.equals(passwort)) {
+                        message.reply(new JsonObject().put("nameStimmt", Boolean.TRUE));
+                        LOGGER.info("Nutzer existiert noch nicht.");
+                    } else {
+                        message.reply(new JsonObject().put("nameStimmt", Boolean.FALSE));
+                    }
+                } else {
+                    LOGGER.info("Nutzer existiert.");
+                    message.reply(new JsonObject().put("nameStimmt", Boolean.FALSE));
+                }
+            } else {
+                message.reply(new JsonObject().put("nameStimmt", Boolean.FALSE));
+            }
+        });
+     }
+    
     private void überprüfeUser(Message<JsonObject> message) {
 
         String name = message.body().getString("name");
